@@ -8,13 +8,22 @@ runConfig:
   concurrency: 80
 
 env:
-  # 本番環境の環境変数（Firebase consoleで設定）
+  # 本番環境の環境変数（値を直接指定）
   - variable: DATABASE_URL
-    secret: DATABASE_URL
+    value: "postgresql://postgres:Pa$$w0rd@35.194.111.166:5432/postgres?sslmode=require"
   - variable: NEXTAUTH_SECRET
-    secret: NEXTAUTH_SECRET
+    value: "firebasehosting-secret-key-32chars-min-2024"
   - variable: NEXTAUTH_URL
-    value: "https://your-app-domain.web.app"
+    value: "https://firebasehostingtest--apphostingtest-5d399.asia-east1.hosted.app"
+
+# セキュリティを重視する場合は、Firebase Consoleでシークレットとして設定:
+# env:
+#   - variable: DATABASE_URL
+#     secret: DATABASE_URL
+#   - variable: NEXTAUTH_SECRET
+#     secret: NEXTAUTH_SECRET
+#   - variable: NEXTAUTH_URL
+#     secret: NEXTAUTH_URL
 
 # Cloud SQL接続の設定例:
 # Firebase consoleで以下のような値を設定してください:
