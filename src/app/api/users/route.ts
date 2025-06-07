@@ -56,9 +56,26 @@ export async function POST(request: NextRequest) {
         name,
         userType: userType || 'USER',
       },
+      include: {
+        posts: true,
+        comments: true,
+      },
     });
 
-    return NextResponse.json({ user }, { status: 201 });
+    // フロントエンドが期待する形式に変換
+    const userWithCount = {
+      id: user.id,
+      email: user.email,
+      name: user.name,
+      userType: user.userType,
+      createdAt: user.createdAt,
+      _count: {
+        posts: user.posts.length,
+        comments: user.comments.length,
+      },
+    };
+
+    return NextResponse.json(userWithCount, { status: 201 });
   } catch (error) {
     console.error('Error creating user:', error);
     

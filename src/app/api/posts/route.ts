@@ -88,10 +88,27 @@ export async function POST(request: NextRequest) {
             category: true,
           },
         },
+        comments: true,
       },
     });
 
-    return NextResponse.json({ post }, { status: 201 });
+    // フロントエンドが期待する形式に変換
+    const postWithCount = {
+      id: post.id,
+      title: post.title,
+      content: post.content,
+      status: post.status,
+      createdAt: post.createdAt,
+      updatedAt: post.updatedAt,
+      authorId: post.authorId,
+      author: post.author,
+      categories: post.categories,
+      _count: {
+        comments: post.comments.length,
+      },
+    };
+
+    return NextResponse.json(postWithCount, { status: 201 });
   } catch (error) {
     console.error('Error creating post:', error);
     return NextResponse.json(

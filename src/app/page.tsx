@@ -118,13 +118,15 @@ export default function Home() {
         body: JSON.stringify(newUser),
       });
       
+      const data = await response.json();
+      
       if (response.ok) {
-        const newUserData = await response.json();
-        setUsers(prev => [...prev, newUserData]);
+        // APIから直接ユーザーデータが返される（userWithCount形式）
+        setUsers(prev => [...prev, data]);
         setNewUser({ email: '', name: '', userType: 'USER' });
         alert('ユーザーを作成しました！');
       } else {
-        alert('ユーザー作成に失敗しました');
+        alert(`ユーザー作成に失敗しました: ${data.error || 'Unknown error'}`);
       }
     } catch (error) {
       console.error('Error creating user:', error);
@@ -144,13 +146,15 @@ export default function Home() {
         body: JSON.stringify(newPost),
       });
       
+      const data = await response.json();
+      
       if (response.ok) {
-        const newPostData = await response.json();
-        setPosts(prev => [...prev, newPostData]);
+        // APIから直接投稿データが返される（postWithCount形式）
+        setPosts(prev => [...prev, data]);
         setNewPost({ title: '', content: '', authorId: '' });
         alert('投稿を作成しました！');
       } else {
-        alert('投稿作成に失敗しました');
+        alert(`投稿作成に失敗しました: ${data.error || 'Unknown error'}`);
       }
     } catch (error) {
       console.error('Error creating post:', error);
