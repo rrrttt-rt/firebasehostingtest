@@ -1,175 +1,247 @@
+'use client';
 
+import { useState, useEffect } from 'react';
+
+interface User {
+  id: string;
+  email: string;
+  name: string | null;
+  userType: string;
+  createdAt: string;
+  _count: {
+    posts: number;
+    comments: number;
+  };
+}
+
+interface Post {
+  id: string;
+  title: string;
+  content: string | null;
+  status: string;
+  createdAt: string;
+  author: {
+    id: string;
+    name: string | null;
+    email: string;
+  };
+  categories: Array<{
+    category: {
+      id: string;
+      name: string;
+      description: string | null;
+    };
+  }>;
+  _count: {
+    comments: number;
+  };
+}
 
 export default function Home() {
+  const [users, setUsers] = useState<User[]>([]);
+  const [posts, setPosts] = useState<Post[]>([]);
+  const [dbStatus, setDbStatus] = useState<'loading' | 'connected' | 'error'>('loading');
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    // データベース接続テスト
+    const testConnection = async () => {
+      try {
+        const response = await fetch('/api/db-test');
+        const result = await response.json();
+        
+        if (result.status === 'success') {
+          setDbStatus('connected');
+        } else {
+          setDbStatus('error');
+        }
+      } catch (error) {
+        console.error('Database connection test failed:', error);
+        setDbStatus('error');
+      }
+    };
+
+    // ユーザーデータ取得
+    const fetchUsers = async () => {
+      try {
+        const response = await fetch('/api/users');
+        const data = await response.json();
+        setUsers(data.users || []);
+      } catch (error) {
+        console.error('Failed to fetch users:', error);
+      }
+    };
+
+    // 投稿データ取得
+    const fetchPosts = async () => {
+      try {
+        const response = await fetch('/api/posts');
+        const data = await response.json();
+        setPosts(data.posts || []);
+      } catch (error) {
+        console.error('Failed to fetch posts:', error);
+      }
+    };
+
+    const loadData = async () => {
+      await testConnection();
+      await Promise.all([fetchUsers(), fetchPosts()]);
+      setLoading(false);
+    };
+
+    loadData();
+  }, []);
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-blue-600 mx-auto"></div>
+          <p className="mt-4 text-gray-600">Loading...</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
-      {/* Header */}
-      <header className="bg-white shadow-md">
-        <div className="max-w-4xl mx-auto px-6 py-4">
-          <h1 className="text-3xl font-bold text-gray-800">科学技術研究所</h1>
-          <p className="text-gray-600 mt-1">最先端技術の解説</p>
-        </div>
-      </header>
-
-      {/* Main Content */}
-      <main className="max-w-4xl mx-auto px-6 py-12">
-        {/* Hero Section */}
-        <section className="bg-white rounded-2xl shadow-lg p-8 mb-12">
-          <div className="text-center mb-8">
-            <h1 className="text-4xl font-bold text-gray-900 mb-4">
-              表面プラズモン
-            </h1>
-            <p className="text-xl text-gray-600">
-              光と金属の界面で起こる神秘的な現象
-            </p>
-          </div>
+    <div className="min-h-screen bg-gray-50 py-8">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        {/* Header */}
+        <div className="text-center mb-12">
+          <h1 className="text-4xl font-bold text-gray-900 mb-4">
+            Firebase Hosting Test with PostgreSQL
+          </h1>
+          <p className="text-xl text-gray-600">
+            Next.js + Prisma + PostgreSQL (Cloud SQL対応)
+          </p>
           
-          <div className="w-full h-64 bg-gradient-to-r from-purple-400 via-pink-500 to-red-500 rounded-xl mb-6 flex items-center justify-center">
-            <div className="text-white text-center">
-              <div className="text-6xl mb-2">🌊</div>
-              <p className="text-lg font-semibold">表面プラズモン波</p>
-            </div>
+          {/* Database Status */}
+          <div className="mt-6 inline-flex items-center px-4 py-2 rounded-full text-sm font-medium">
+            {dbStatus === 'connected' && (
+              <span className="bg-green-100 text-green-800 px-3 py-1 rounded-full">
+                ✅ Database Connected
+              </span>
+            )}
+            {dbStatus === 'error' && (
+              <span className="bg-red-100 text-red-800 px-3 py-1 rounded-full">
+                ❌ Database Connection Error
+              </span>
+            )}
+            {dbStatus === 'loading' && (
+              <span className="bg-yellow-100 text-yellow-800 px-3 py-1 rounded-full">
+                🔄 Testing Connection...
+              </span>
+            )}
           </div>
-        </section>
-
-        {/* Introduction */}
-        <section className="bg-white rounded-2xl shadow-lg p-8 mb-12">
-          <h2 className="text-2xl font-bold text-gray-900 mb-6">表面プラズモンとは</h2>
-          <p className="text-gray-700 leading-relaxed mb-4">
-            表面プラズモンは、金属と誘電体の界面で励起される電子の集団振動現象です。
-            光が金属表面に照射されると、金属内の自由電子が集団的に振動し、
-            特定の条件下で表面に沿って伝播する電磁波モードが形成されます。
-          </p>
-          <p className="text-gray-700 leading-relaxed">
-            この現象は、ナノテクノロジー、バイオセンシング、光学デバイスなど、
-            様々な分野で革新的な応用が期待されています。
-          </p>
-        </section>
-
-        {/* Types of Plasmons */}
-        <section className="grid md:grid-cols-2 gap-8 mb-12">
-          <div className="bg-white rounded-2xl shadow-lg p-8">
-            <div className="flex items-center mb-4">
-              <div className="w-3 h-3 bg-blue-500 rounded-full mr-3"></div>
-              <h3 className="text-xl font-bold text-gray-900">表面プラズモン共鳴（SPR）</h3>
-            </div>
-            <p className="text-gray-700 leading-relaxed mb-4">
-              金属薄膜と誘電体界面で起こる共鳴現象。入射光の角度や波長を調整することで、
-              表面プラズモンを効率的に励起できます。
-            </p>
-            <div className="bg-blue-50 p-4 rounded-lg">
-              <h4 className="font-semibold text-blue-900 mb-2">主な応用</h4>
-              <ul className="text-blue-800 text-sm space-y-1">
-                <li>• バイオセンシング</li>
-                <li>• 分子相互作用解析</li>
-                <li>• 医療診断デバイス</li>
-              </ul>
-            </div>
-          </div>
-
-          <div className="bg-white rounded-2xl shadow-lg p-8">
-            <div className="flex items-center mb-4">
-              <div className="w-3 h-3 bg-purple-500 rounded-full mr-3"></div>
-              <h3 className="text-xl font-bold text-gray-900">局在表面プラズモン共鳴（LSPR）</h3>
-            </div>
-            <p className="text-gray-700 leading-relaxed mb-4">
-              金属ナノ粒子において電子が局在化して振動する現象。
-              粒子サイズや形状により共鳴波長を制御可能です。
-            </p>
-            <div className="bg-purple-50 p-4 rounded-lg">
-              <h4 className="font-semibold text-purple-900 mb-2">主な応用</h4>
-              <ul className="text-purple-800 text-sm space-y-1">
-                <li>• 光触媒</li>
-                <li>• イメージング技術</li>
-                <li>• 色素増感太陽電池</li>
-              </ul>
-            </div>
-          </div>
-        </section>
-
-        {/* Research Highlights */}
-        <section className="bg-white rounded-2xl shadow-lg p-8 mb-12">
-          <h2 className="text-2xl font-bold text-gray-900 mb-6">最新研究動向</h2>
-          <div className="space-y-6">
-            <div className="border-l-4 border-green-500 pl-6">
-              <h3 className="text-lg font-semibold text-gray-900 mb-2">
-                銀ナノ構造配列による電場増強効果
-              </h3>
-              <p className="text-gray-700 text-sm leading-relaxed">
-                最新の研究では、銀ナノ構造を規則的に配列することで、
-                表面プラズモンによる電場増強効果を大幅に向上させることに成功しています。
-                この技術により、分光分析の感度が飛躍的に向上しました。
-              </p>
-            </div>
-
-            <div className="border-l-4 border-orange-500 pl-6">
-              <h3 className="text-lg font-semibold text-gray-900 mb-2">
-                ナノテクノロジーとの融合
-              </h3>
-              <p className="text-gray-700 text-sm leading-relaxed">
-                表面プラズモン技術は、ナノテクノロジーと組み合わせることで、
-                従来では不可能だった高精度センシングや新材料開発を可能にしています。
-              </p>
-            </div>
-          </div>
-        </section>
-
-        {/* Applications */}
-        <section className="bg-white rounded-2xl shadow-lg p-8 mb-12">
-          <h2 className="text-2xl font-bold text-gray-900 mb-6">産業応用分野</h2>
-          <div className="grid md:grid-cols-3 gap-6">
-            <div className="text-center p-6 bg-gradient-to-br from-blue-50 to-blue-100 rounded-xl">
-              <div className="text-4xl mb-3">🔬</div>
-              <h3 className="font-semibold text-gray-900 mb-2">バイオセンシング</h3>
-              <p className="text-gray-700 text-sm">
-                タンパク質や DNA の検出、
-                医療診断への応用
-              </p>
-            </div>
-
-            <div className="text-center p-6 bg-gradient-to-br from-green-50 to-green-100 rounded-xl">
-              <div className="text-4xl mb-3">📡</div>
-              <h3 className="font-semibold text-gray-900 mb-2">通信技術</h3>
-              <p className="text-gray-700 text-sm">
-                光通信デバイス、
-                高速データ伝送
-              </p>
-            </div>
-
-            <div className="text-center p-6 bg-gradient-to-br from-purple-50 to-purple-100 rounded-xl">
-              <div className="text-4xl mb-3">⚡</div>
-              <h3 className="font-semibent text-gray-900 mb-2">エネルギー</h3>
-              <p className="text-gray-700 text-sm">
-                太陽電池効率向上、
-                光触媒技術
-              </p>
-            </div>
-          </div>
-        </section>
-
-        {/* Future Prospects */}
-        <section className="bg-gradient-to-r from-indigo-500 to-purple-600 rounded-2xl shadow-lg p-8 text-white">
-          <h2 className="text-2xl font-bold mb-6">将来展望</h2>
-          <p className="leading-relaxed mb-4">
-            表面プラズモン技術は、量子技術やAI技術との融合により、
-            さらなる革新的な応用が期待されています。
-          </p>
-          <p className="leading-relaxed">
-            特に、超高感度センシング、量子情報処理、
-            次世代光コンピューティングなどの分野で、
-            breakthrough となる可能性を秘めています。
-          </p>
-        </section>
-      </main>
-
-      {/* Footer */}
-      <footer className="bg-gray-800 text-white py-8 mt-16">
-        <div className="max-w-4xl mx-auto px-6 text-center">
-          <p className="text-gray-400">
-            © 2024 科学技術研究所 - 表面プラズモン研究
-          </p>
         </div>
-      </footer>
+
+        {/* Content Grid */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+          {/* Users Section */}
+          <div className="bg-white rounded-lg shadow-sm p-6">
+            <h2 className="text-2xl font-semibold text-gray-900 mb-6">
+              Users ({users.length})
+            </h2>
+            <div className="space-y-4">
+              {users.map((user) => (
+                <div key={user.id} className="border border-gray-200 rounded-lg p-4">
+                  <div className="flex items-center justify-between mb-2">
+                    <h3 className="font-medium text-gray-900">
+                      {user.name || 'Anonymous'}
+                    </h3>
+                    <span className={`px-2 py-1 text-xs rounded-full ${
+                      user.userType === 'ADMIN' 
+                        ? 'bg-purple-100 text-purple-800'
+                        : 'bg-blue-100 text-blue-800'
+                    }`}>
+                      {user.userType}
+                    </span>
+                  </div>
+                  <p className="text-sm text-gray-600 mb-2">{user.email}</p>
+                  <div className="flex space-x-4 text-xs text-gray-500">
+                    <span>Posts: {user._count.posts}</span>
+                    <span>Comments: {user._count.comments}</span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Posts Section */}
+          <div className="bg-white rounded-lg shadow-sm p-6">
+            <h2 className="text-2xl font-semibold text-gray-900 mb-6">
+              Posts ({posts.length})
+            </h2>
+            <div className="space-y-4">
+              {posts.map((post) => (
+                <div key={post.id} className="border border-gray-200 rounded-lg p-4">
+                  <div className="mb-2">
+                    <h3 className="font-medium text-gray-900 mb-1">
+                      {post.title}
+                    </h3>
+                    <p className="text-sm text-gray-600 line-clamp-2">
+                      {post.content}
+                    </p>
+                  </div>
+                  <div className="flex items-center justify-between text-xs text-gray-500">
+                    <span>By: {post.author.name || post.author.email}</span>
+                    <span>Comments: {post._count.comments}</span>
+                  </div>
+                  {post.categories.length > 0 && (
+                    <div className="mt-2 flex flex-wrap gap-1">
+                      {post.categories.map(({ category }) => (
+                        <span
+                          key={category.id}
+                          className="px-2 py-1 bg-gray-100 text-gray-700 text-xs rounded"
+                        >
+                          {category.name}
+                        </span>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+
+        {/* API Endpoints Info */}
+        <div className="mt-12 bg-white rounded-lg shadow-sm p-6">
+          <h2 className="text-2xl font-semibold text-gray-900 mb-4">
+            Available API Endpoints
+          </h2>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="border border-gray-200 rounded-lg p-4">
+              <h3 className="font-medium text-gray-900 mb-2">Database Test</h3>
+              <code className="text-sm text-gray-600 bg-gray-50 px-2 py-1 rounded">
+                GET /api/db-test
+              </code>
+            </div>
+            <div className="border border-gray-200 rounded-lg p-4">
+              <h3 className="font-medium text-gray-900 mb-2">Users</h3>
+              <div className="space-y-1">
+                <code className="block text-sm text-gray-600 bg-gray-50 px-2 py-1 rounded">
+                  GET /api/users
+                </code>
+                <code className="block text-sm text-gray-600 bg-gray-50 px-2 py-1 rounded">
+                  POST /api/users
+                </code>
+              </div>
+            </div>
+            <div className="border border-gray-200 rounded-lg p-4">
+              <h3 className="font-medium text-gray-900 mb-2">Posts</h3>
+              <div className="space-y-1">
+                <code className="block text-sm text-gray-600 bg-gray-50 px-2 py-1 rounded">
+                  GET /api/posts
+                </code>
+                <code className="block text-sm text-gray-600 bg-gray-50 px-2 py-1 rounded">
+                  POST /api/posts
+                </code>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
   );
 }

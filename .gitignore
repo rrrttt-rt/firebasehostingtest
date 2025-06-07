@@ -39,3 +39,23 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# Prisma
+node_modules
+.env
+migrations
+
+# Firebase
+.firebase/
+firebase-debug.log
+firebase-debug.*.log
+
+# VS Code
+.vscode/
+
+# Cloud SQL Proxy
+cloud_sql_proxy
+
+# Backup files
+*.backup
+*.bak

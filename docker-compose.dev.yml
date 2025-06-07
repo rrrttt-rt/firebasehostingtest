@@ -1,0 +1,30 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:15
+    container_name: firebasehostingtest-postgres
+    environment:
+      POSTGRES_DB: firebasehostingtest_dev
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: password
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    restart: unless-stopped
+
+  # 本番環境のCloud SQLに接続するためのProxy（オプション）
+  cloudsql-proxy:
+    image: gcr.io/cloudsql-docker/gce-proxy:1.33.7
+    container_name: cloudsql-proxy
+    command: /cloud_sql_proxy -instances=YOUR_PROJECT_ID:asia-northeast1:firebasehostingtest-db=tcp:0.0.0.0:5433 -credential_file=/config/key.json
+    ports:
+      - "5433:5433"
+    volumes:
+      - ./path/to/service-account-key.json:/config/key.json:ro
+    profiles:
+      - cloud-sql
+
+volumes:
+  postgres_data: 

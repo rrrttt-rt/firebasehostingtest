@@ -1,8 +1,12 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  // Next.js 15ではサーバーアクションはデフォルトで有効
-  // 特別な設定は不要ですが、App Hostingでの動作を最適化
+  // Firebase App HostingではAPI routesを使用できるため、static exportは無効にする
+  // output: 'export',
+  // trailingSlash: true,
+  images: {
+    unoptimized: true,
+  },
 };
 
 export default nextConfig;
